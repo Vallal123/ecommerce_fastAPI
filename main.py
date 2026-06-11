@@ -5,6 +5,7 @@ from models.user import UserTable, UserRegister, UserLogin
 from models.product import ProductTable, CategoryTable, ProductCreate, CategoryCreate
 from auth import create_access_token
 from passlib.context import CryptContext
+from auth import create_access_token, admin_required
 
 Base.metadata.create_all(bind=engine)
 
@@ -40,7 +41,7 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
     return {"access_token": token, "token_type": "bearer"}
 
 @app.post("/category")
-def create_category(category: CategoryCreate, db: Session = Depends(get_db)):
+def create_category(category: CategoryCreate, db: Session = Depends(get_db), admin = Depends(admin_required)):
     existing = db.query(CategoryTable).filter(CategoryTable.name == category.name).first()
     if existing:
         raise HTTPException(status_code=400, detail="Category already exists")
@@ -51,7 +52,7 @@ def create_category(category: CategoryCreate, db: Session = Depends(get_db)):
     return new_category
 
 @app.post("/product")
-def create_product(product: ProductCreate, db: Session = Depends(get_db)):
+def create_product(product: ProductCreate, db: Session = Depends(get_db), admin = Depends(admin_required)):
     category = db.query(CategoryTable).filter(CategoryTable.id == product.category_id).first()
     if not category:
         raise HTTPException(status_code=400, detail="Category not found")

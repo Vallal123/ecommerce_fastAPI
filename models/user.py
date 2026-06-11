@@ -13,6 +13,7 @@ class UserTable(Base):
     phone = Column(String)
     address = Column(String)
     password = Column(String)
+    role = Column(String, default="customer")
 
 
 #Pydantic model (validation)
