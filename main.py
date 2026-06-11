@@ -3,9 +3,8 @@ from sqlalchemy.orm import Session
 from database import Base, engine, get_db
 from models.user import UserTable, UserRegister, UserLogin
 from models.product import ProductTable, CategoryTable, ProductCreate, CategoryCreate
-from auth import create_access_token
-from passlib.context import CryptContext
 from auth import create_access_token, admin_required
+from passlib.context import CryptContext
 
 Base.metadata.create_all(bind=engine)
 
@@ -18,7 +17,7 @@ def register(user: UserRegister, db: Session = Depends(get_db)):
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered")
     
-    hashed_password = pwd_context.hash(user.password[:72])
+    hashed_password = pwd_context.hash(user.password)
     new_user = UserTable(
         name=user.name,
         email=user.email,
