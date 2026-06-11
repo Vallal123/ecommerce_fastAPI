@@ -1,7 +1,10 @@
+import re
+
 from pydantic import BaseModel, EmailStr, field_validator
 from sqlalchemy import Column, Integer, String
+
 from database import Base
-import re
+
 
 # SQLAlchemy model (table)
 class UserTable(Base):

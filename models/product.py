@@ -1,7 +1,9 @@
 from pydantic import BaseModel, field_validator
-from sqlalchemy import Column, Integer, String, DECIMAL, ForeignKey
+from sqlalchemy import DECIMAL, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
+
 from database import Base
+
 
 class CategoryTable(Base):
     __tablename__ = "categories"

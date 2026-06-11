@@ -1,13 +1,17 @@
 import os
+
 from dotenv import load_dotenv
+
 load_dotenv()
 
 from logging.config import fileConfig
+
 from sqlalchemy import create_engine, pool
+
 from alembic import context
 from database import Base, engine
+from models.product import CategoryTable, ProductTable
 from models.user import UserTable
-from models.product import ProductTable, CategoryTable
 
 config = context.config
 fileConfig(config.config_file_name)

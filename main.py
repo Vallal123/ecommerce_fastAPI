@@ -1,10 +1,12 @@
-from fastapi import FastAPI, Depends, HTTPException
-from sqlalchemy.orm import Session
-from database import Base, engine, get_db
-from models.user import UserTable, UserRegister, UserLogin
-from models.product import ProductTable, CategoryTable, ProductCreate, CategoryCreate
-from auth import create_access_token, admin_required
+from fastapi import Depends, FastAPI, HTTPException
 from passlib.context import CryptContext
+from sqlalchemy.orm import Session
+
+from auth import admin_required, create_access_token
+from database import Base, engine, get_db
+from models.product import (CategoryCreate, CategoryTable, ProductCreate,
+                            ProductTable)
+from models.user import UserLogin, UserRegister, UserTable
 
 Base.metadata.create_all(bind=engine)
 

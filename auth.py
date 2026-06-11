@@ -1,11 +1,14 @@
-from jose import JWTError, jwt
+import os
 from datetime import datetime, timedelta, timezone
+
+from dotenv import load_dotenv
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
+from jose import JWTError, jwt
 from sqlalchemy.orm import Session
+
 from database import get_db
-import os
-from dotenv import load_dotenv
+
 load_dotenv()
 
 SECRET_KEY = os.getenv("SECRET_KEY")
