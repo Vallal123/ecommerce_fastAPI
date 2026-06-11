@@ -2,6 +2,7 @@ from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import Base, engine, get_db
 from models.user import UserTable, UserRegister, UserLogin
+from models.product import ProductTable, CategoryTable, ProductCreate, CategoryCreate
 from auth import create_access_token
 from passlib.context import CryptContext
 
@@ -37,3 +38,30 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
     
     token = create_access_token(data={"sub": db_user.email})
     return {"access_token": token, "token_type": "bearer"}
+
+@app.post("/category")
+def create_category(category: CategoryCreate, db: Session = Depends(get_db)):
+    existing = db.query(CategoryTable).filter(CategoryTable.name == category.name).first()
+    if existing:
+        raise HTTPException(status_code=400, detail="Category already exists")
+    new_category = CategoryTable(name=category.name)
+    db.add(new_category)
+    db.commit()
+    db.refresh(new_category)
+    return new_category
+
+@app.post("/product")
+def create_product(product: ProductCreate, db: Session = Depends(get_db)):
+    category = db.query(CategoryTable).filter(CategoryTable.id == product.category_id).first()
+    if not category:
+        raise HTTPException(status_code=400, detail="Category not found")
+    new_product = ProductTable(
+        name=product.name,
+        price=product.price,
+        available_qty=product.available_qty,
+        category_id=product.category_id
+    )
+    db.add(new_product)
+    db.commit()
+    db.refresh(new_product)
+    return new_product
