@@ -1,6 +1,7 @@
 from fastapi import Depends, FastAPI, HTTPException
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
+from decimal import Decimal
 
 from auth import admin_required, create_access_token
 from database import Base, engine, get_db
@@ -67,3 +68,21 @@ def create_product(product: ProductCreate, db: Session = Depends(get_db), admin 
     db.commit()
     db.refresh(new_product)
     return new_product
+
+
+@app.get("/products")
+def list_products(price: Decimal = None, category_id: int = None, db: Session = Depends(get_db)):
+    query = db.query(ProductTable)
+
+    if price is not None:
+        query = query.filter(ProductTable.price <= price)
+    
+    if category_id is not None:
+        query = query.filter(ProductTable.category_id == category_id)
+
+    products = query.all()
+
+    if not products:
+        raise HTTPException(status_code=404, detail="No products found")
+
+    return products
