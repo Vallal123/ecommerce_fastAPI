@@ -86,3 +86,12 @@ def list_products(price: Decimal = None, category_id: int = None, db: Session = 
         raise HTTPException(status_code=404, detail="No products found")
 
     return products
+
+@app.get("/products/id")
+def get_product(id: int, db: Session = Depends(get_db)):
+    item = db.query(ProductTable).filter(id).first()
+
+    if item.id != id:
+        return HTTPException(status_code=404, detail="No item found")
+    
+    return item
