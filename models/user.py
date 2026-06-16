@@ -50,3 +50,16 @@ class UserRegister(BaseModel):
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
+
+# response schema (what you return)
+class UserResponse(BaseModel):
+    id: int
+    name: str
+    email: str
+    phone: str
+    address: str
+    role: str
+    
+    class Config:
+        from_attributes = True
+        
