@@ -43,3 +43,22 @@ class ProductCreate(BaseModel):
 
 class CategoryCreate(BaseModel):
         name: str
+
+# response schemas
+class CategoryResponse(BaseModel):
+     id: int
+     name: str
+
+     class Config:
+          from_attributes = True
+
+class ProductResponse(BaseModel):
+     id: int
+     name: str
+     price: float
+     available_qty: int
+     category: CategoryResponse
+
+     class Config:
+          from_attributes = True
+
