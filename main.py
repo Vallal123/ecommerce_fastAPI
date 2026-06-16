@@ -8,10 +8,16 @@ from database import Base, engine, get_db
 from models.product import (CategoryCreate, CategoryTable, ProductCreate,
                             ProductTable, ProductResponse, CategoryResponse)
 from models.user import UserLogin, UserRegister, UserTable, UserResponse
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
-Base.metadata.create_all(bind=engine)
+limiter = Limiter(key_func=get_remote_address)
+
 
 app = FastAPI()
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 @app.post("/register", response_model=UserResponse)
@@ -34,6 +40,7 @@ def register(user: UserRegister, db: Session = Depends(get_db)):
     return {"message": f"{user.email} registered successfully"}
 
 @app.post("/login")
+@limiter.limit("5/minute")
 def login(user: UserLogin, db: Session = Depends(get_db)):
     db_user = db.query(UserTable).filter(UserTable.email == user.email).first()
     if not db_user or not pwd_context.verify(user.password, db_user.password):
@@ -71,6 +78,7 @@ def create_product(product: ProductCreate, db: Session = Depends(get_db), admin 
 
 
 @app.get("/products", response_model=list[ProductResponse])
+@limiter.limit("100/minute")
 def list_products(price: Decimal = None, category_id: int = None, db: Session = Depends(get_db)):
     query = db.query(ProductTable)
 
