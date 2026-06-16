@@ -6,15 +6,15 @@ from decimal import Decimal
 from auth import admin_required, create_access_token
 from database import Base, engine, get_db
 from models.product import (CategoryCreate, CategoryTable, ProductCreate,
-                            ProductTable)
-from models.user import UserLogin, UserRegister, UserTable
+                            ProductTable, ProductResponse, CategoryResponse)
+from models.user import UserLogin, UserRegister, UserTable, UserResponse
 
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-@app.post("/register")
+@app.post("/register", response_model=UserResponse)
 def register(user: UserRegister, db: Session = Depends(get_db)):
     existing_user = db.query(UserTable).filter(UserTable.email == user.email).first()
     if existing_user:
@@ -42,7 +42,7 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
     token = create_access_token(data={"sub": db_user.email})
     return {"access_token": token, "token_type": "bearer"}
 
-@app.post("/category")
+@app.post("/category", response_model=CategoryResponse)
 def create_category(category: CategoryCreate, db: Session = Depends(get_db), admin = Depends(admin_required)):
     existing = db.query(CategoryTable).filter(CategoryTable.name == category.name).first()
     if existing:
@@ -53,7 +53,7 @@ def create_category(category: CategoryCreate, db: Session = Depends(get_db), adm
     db.refresh(new_category)
     return new_category
 
-@app.post("/product")
+@app.post("/product", response_model=ProductResponse)
 def create_product(product: ProductCreate, db: Session = Depends(get_db), admin = Depends(admin_required)):
     category = db.query(CategoryTable).filter(CategoryTable.id == product.category_id).first()
     if not category:
@@ -70,7 +70,7 @@ def create_product(product: ProductCreate, db: Session = Depends(get_db), admin 
     return new_product
 
 
-@app.get("/products")
+@app.get("/products", response_model=list[ProductResponse])
 def list_products(price: Decimal = None, category_id: int = None, db: Session = Depends(get_db)):
     query = db.query(ProductTable)
 
@@ -87,11 +87,11 @@ def list_products(price: Decimal = None, category_id: int = None, db: Session = 
 
     return products
 
-@app.get("/products/id")
+@app.get("/products/{id}", response_model=ProductResponse)
 def get_product(id: int, db: Session = Depends(get_db)):
-    item = db.query(ProductTable).filter(id).first()
+    item = db.query(ProductTable).filter(ProductTable.id).first()
 
-    if item.id != id:
+    if not item:
         return HTTPException(status_code=404, detail="No item found")
     
     return item
